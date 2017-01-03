@@ -3,7 +3,7 @@
 $azure_key = "KEY_1";  // !!! TODO: secret key here !!!
 $fromLanguage = "en";
 $toLanguage = "de";
-$inputStr = "AZURE - The official documentation and examples for PHP are useless.";
+$inputStr = "AZURE test string";
 // and leave the rest of the code as it is ;-)
 function getToken($azure_key)
 {
