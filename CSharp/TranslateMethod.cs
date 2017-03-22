@@ -12,16 +12,20 @@ namespace MicrosoftTranslatorSdk.HttpSamples
     {
         static void Main(string[] args)
         {
-            AdmAccessToken admToken;
+            //https://datamarket.azure.com site will be deprecated. So we need use new method to obtain the access_token.
+            //Rlease refer obtaining token (http://docs.microsofttranslator.com/oauth-token.html) 
+            //AdmAccessToken admToken;
             string headerValue;
+            string Key = "********"; //You can get key from Azure Port
+
             //Get Client Id and Client Secret from https://datamarket.azure.com/developer/applications/
             //Refer obtaining AccessToken (http://msdn.microsoft.com/en-us/library/hh454950.aspx) 
-            AdmAuthentication admAuth = new AdmAuthentication("clientID", "client secret");
+            //AdmAuthentication admAuth = new AdmAuthentication("clientID", "client secret");
             try
             {
-                admToken = admAuth.GetAccessToken();
+               // admToken = admAuth.GetAccessToken();
                 // Create a header with the access_token property of the returned token
-                headerValue = "Bearer " + admToken.access_token;
+                headerValue = "Bearer " + GetAccessToken();
                 TranslateMethod(headerValue);
             }
             catch (WebException e)
@@ -37,6 +41,42 @@ namespace MicrosoftTranslatorSdk.HttpSamples
                 Console.ReadKey(true);
             }
         }
+        private string GetAccessToken()
+        {
+            string responseHtml = "";
+            HttpWebRequest webRequest;
+            string url;
+            if (
+                this.AccessToken == "" || 
+                (System.DateTime.Now - this.LastGetAccessToeknTime).TotalMilliseconds > 5
+            )
+            {
+                url = "https://api.cognitive.microsoft.com/sts/v1.0/issueToken?";
+                webRequest = (HttpWebRequest)HttpWebRequest.Create(new Uri(url));
+                webRequest.ContentType = "application/x-www-form-urlencoded";
+                webRequest.Accept = "application/jwt";
+                webRequest.Headers.Add("Ocp-Apim-Subscription-Key", this.Key);
+                webRequest.Method = "POST";
+                webRequest.ContentLength = 0;
+                try
+                {
+                    using (WebResponse webResponse = webRequest.GetResponse())
+                    {
+                        this.AccessToken = new StreamReader(webResponse.GetResponseStream()).ReadToEnd();
+                    }
+                }
+                catch (WebException ex)
+                {
+                    responseHtml = new StreamReader(ex.Response.GetResponseStream()).ReadToEnd();
+                    throw (new Exception(ex.Message + "\r\n" + responseHtml));
+                }
+            }
+            return this.AccessToken;
+        }
+        //end private string GetAccessToken()
+
+ 
+
         private static void TranslateMethod(string authToken)
         {
             string text = "Use pixels to express measurements for padding and margins.";
@@ -102,6 +142,8 @@ namespace MicrosoftTranslatorSdk.HttpSamples
         [DataMember]
         public string scope { get; set; }
     }
+    
+    //AdmAuthentication will be deprecated
     public class AdmAuthentication
     {
         public static readonly string DatamarketAccessUri = "https://datamarket.accesscontrol.windows.net/v2/OAuth2-13";
