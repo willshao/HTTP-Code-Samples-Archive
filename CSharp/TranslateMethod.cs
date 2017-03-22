@@ -41,7 +41,7 @@ namespace MicrosoftTranslatorSdk.HttpSamples
                 Console.ReadKey(true);
             }
         }
-        private string GetAccessToken()
+        private static string GetAccessToken()
         {
             string responseHtml = "";
             HttpWebRequest webRequest;
